@@ -1,5 +1,6 @@
 const express = require("express");
 const Users = require("./userDb");
+const Posts = require("../posts/postDb");
 
 const router = express.Router();
 
@@ -12,8 +13,17 @@ router.post("/", validateUser, async (req, res) => {
   }
 });
 
-router.post("/:id/posts", validateUserId, validatePost, (req, res) => {
-  res.send("/api/users/id/posts");
+router.post("/:id/posts", validateUserId, validatePost, async (req, res) => {
+  try {
+    const post = await Posts.insert({
+      text: req.body.text,
+      user_id: req.params.id
+    });
+
+    res.status(201).json(post);
+  } catch {
+    res.status(500).json({ message: "The post could not be created" });
+  }
 });
 
 router.get("/", async (req, res) => {
