@@ -3,8 +3,13 @@ const Users = require("./userDb");
 
 const router = express.Router();
 
-router.post("/", validateUser, (req, res) => {
-  res.send("/api/users");
+router.post("/", validateUser, async (req, res) => {
+  try {
+    const user = await Users.insert({ name: req.body.name });
+    res.status(201).json(user);
+  } catch {
+    res.status(500).json({ message: "The users could not be created" });
+  }
 });
 
 router.post("/:id/posts", validateUserId, validatePost, (req, res) => {
