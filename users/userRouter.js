@@ -52,12 +52,33 @@ router.get("/:id/posts", validateUserId, async (req, res) => {
   }
 });
 
-router.delete("/:id", validateUserId, (req, res) => {
-  res.send("/api/users/:id");
+router.delete("/:id", validateUserId, async (req, res) => {
+  try {
+    const deletedUser = await Users.remove(req.params.id);
+    if (deletedUser) {
+      res.status(200).json(req.user);
+    } else {
+      res.status(500).json({ message: "The user could not be deleted" });
+    }
+  } catch {
+    res.status(500).json({ message: "The user could not be deleted" });
+  }
 });
 
-router.put("/:id", validateUserId, (req, res) => {
-  res.send("/api/users/:id");
+router.put("/:id", validateUserId, async (req, res) => {
+  const { name } = req.body;
+
+  try {
+    const updatedUser = await Users.update(req.params.id, { name });
+    if (updatedUser) {
+      const user = await Users.getById(req.params.id);
+      res.status(200).json(user);
+    } else {
+      res.status(500).json({ message: "The user could not be updated" });
+    }
+  } catch {
+    res.status(500).json({ message: "The user could not be updated" });
+  }
 });
 
 //custom middleware
