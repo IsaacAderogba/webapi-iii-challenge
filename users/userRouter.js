@@ -20,12 +20,21 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.get("/:id", validateUserId, async (req, res) => {
+router.get("/:id", validateUserId, (req, res) => {
   res.status(200).json(req.user);
 });
 
-router.get("/:id/posts", validateUserId, (req, res) => {
-  res.send("/api/users/:id/posts");
+router.get("/:id/posts", validateUserId, async (req, res) => {
+  try {
+    const posts = await Users.getUserPosts(req.user.id);
+    if (posts.length > 0) {
+      res.status(200).json(posts);
+    } else {
+      res.status(404).json({ message: `No posts by that user could be found` });
+    }
+  } catch {
+    res.status(500).json({ message: "The posts could not be retrieved" });
+  }
 });
 
 router.delete("/:id", validateUserId, (req, res) => {
