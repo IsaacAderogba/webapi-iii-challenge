@@ -13,15 +13,15 @@ router.post("/:id/posts", validateUserId, validatePost, (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const users = await Users.get(req.userId);
+    const users = await Users.get();
     res.status(200).json(users);
   } catch {
-    res.status(500).json({message: 'The users could not be retrieved'})
+    res.status(500).json({ message: "The users could not be retrieved" });
   }
 });
 
-router.get("/:id", validateUserId, (req, res) => {
-  res.send("/api/users/:id");
+router.get("/:id", validateUserId, async (req, res) => {
+  res.status(200).json(req.user);
 });
 
 router.get("/:id/posts", validateUserId, (req, res) => {
@@ -44,7 +44,7 @@ async function validateUserId(req, res, next) {
     try {
       const user = await Users.getById(id);
       if (user) {
-        req.userId = id;
+        req.user = user;
         next();
       } else {
         res
@@ -52,7 +52,7 @@ async function validateUserId(req, res, next) {
           .json({ message: `The user with Id of '${id}' could not be found` });
       }
     } catch {
-        res.status(500).json({message: 'The user could not be retrieved'})
+      res.status(500).json({ message: "The user could not be retrieved" });
     }
   } else {
     res.status(400).json({ message: `The Id of '${id}' is not valid` });
