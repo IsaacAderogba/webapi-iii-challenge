@@ -11,8 +11,13 @@ router.post("/:id/posts", validateUserId, validatePost, (req, res) => {
   res.send("/api/users/id/posts");
 });
 
-router.get("/", (req, res) => {
-  res.send("/api/users/");
+router.get("/", async (req, res) => {
+  try {
+    const users = await Users.get(req.userId);
+    res.status(200).json(users);
+  } catch {
+    res.status(500).json({message: 'The users could not be retrieved'})
+  }
 });
 
 router.get("/:id", validateUserId, (req, res) => {
@@ -36,14 +41,18 @@ router.put("/:id", validateUserId, (req, res) => {
 async function validateUserId(req, res, next) {
   const { id } = req.params;
   if (Number.isInteger(parseInt(id, 10))) {
-    const user = await Users.getById(id);
-    if (user) {
-      req.userId = id;
-      next();
-    } else {
-      res
-        .status(404)
-        .json({ message: `The user with Id of '${id}' could not be found` });
+    try {
+      const user = await Users.getById(id);
+      if (user) {
+        req.userId = id;
+        next();
+      } else {
+        res
+          .status(404)
+          .json({ message: `The user with Id of '${id}' could not be found` });
+      }
+    } catch {
+        res.status(500).json({message: 'The user could not be retrieved'})
     }
   } else {
     res.status(400).json({ message: `The Id of '${id}' is not valid` });
@@ -51,27 +60,27 @@ async function validateUserId(req, res, next) {
 }
 
 function validateUser(req, res, next) {
-    const { name } = req.body;
-    
-    if(Object.keys(req.body).length === 0){
-        res.status(400).json({message: 'Missing user data'})
-    } else if(!name) {
-        res.status(400).json({message: 'Missing required name field'})
-    } else {
-        next();
-    }
+  const { name } = req.body;
+
+  if (Object.keys(req.body).length === 0) {
+    res.status(400).json({ message: "Missing user data" });
+  } else if (!name) {
+    res.status(400).json({ message: "Missing required name field" });
+  } else {
+    next();
+  }
 }
 
 function validatePost(req, res, next) {
-    const { text } = req.body;
-    
-    if(Object.keys(req.body).length === 0){
-        res.status(400).json({message: 'Missing post data'})
-    } else if(!text) {
-        res.status(400).json({message: 'Missing required text field'})
-    } else {
-        next();
-    }
+  const { text } = req.body;
+
+  if (Object.keys(req.body).length === 0) {
+    res.status(400).json({ message: "Missing post data" });
+  } else if (!text) {
+    res.status(400).json({ message: "Missing required text field" });
+  } else {
+    next();
+  }
 }
 
 module.exports = router;
